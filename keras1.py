@@ -156,6 +156,9 @@ model_all.compile(optimizer=Adam(lr=0.001), loss=['binary_crossentropy', 'mse'])
 # Load the data
 X, y = load_data("annotation.csv", "processed_img", config)
 
+print("x",X.shape)
+print("y",y.shape)
+
 # Train-test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -164,13 +167,21 @@ checkpoint = ModelCheckpoint('model_weights.h5', monitor='val_loss', save_best_o
 early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, mode='min')
 reduce_lr_on_plateau = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, mode='min')
 
-y_train_reshaped = np.reshape(y_train, (-1, 1, 1, 4))
-y_test_reshaped = np.reshape(y_test, (-1, 1, 1, 4))
+y_train_reshaped = np.reshape(y_train, (-1,1, 4))
+y_test_reshaped = np.reshape(y_test, (-1, 1, 4))
+#print y_train_reshaped [0]
 
-X_train = np.vstack(X_train)
-y_train_reshaped = np.vstack(y_train_reshaped)
-X_test = np.vstack(X_test)
-y_test_reshaped = np.vstack(y_test_reshaped)
+print("y_train_reshaped [0]",y_train_reshaped[0])
+
+#X_train = np.vstack(X_train)
+#y_train_reshaped = np.vstack(y_train_reshaped)
+#X_test = np.vstack(X_test)
+#y_test_reshaped = np.vstack(y_test_reshaped)
+
+print("x_train",X_train.shape)
+print("y_train_reshaped",y_train_reshaped.shape)
+print("x_test",X_test.shape)
+print("y_test_reshaped",y_test_reshaped.shape)
 
 
 history = model_all.fit([X_train, y_train_reshaped], epochs=100, batch_size=16, validation_data=([X_test, y_test_reshaped]), callbacks=[checkpoint, early_stopping, reduce_lr_on_plateau])
