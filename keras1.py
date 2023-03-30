@@ -135,7 +135,7 @@ def load_data(annotations_file, img_folder, config):
 input_shape_img = (None, None, 3)
 input_shape_rois = (None, 4)
 num_rois = 32
-num_classes = 2 # Background + "node" class
+num_classes = 1
 
 model_rpn, model_classifier, model_all = get_model(input_shape_img, input_shape_rois, num_rois, num_classes)
 
@@ -169,14 +169,26 @@ reduce_lr_on_plateau = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patienc
 
 y_train_reshaped = np.reshape(y_train, (-1,1, 4))
 y_test_reshaped = np.reshape(y_test, (-1, 1, 4))
-#print y_train_reshaped [0]
 
-print("y_train_reshaped [0]",y_train_reshaped[0])
 
-#X_train = np.vstack(X_train)
-#y_train_reshaped = np.vstack(y_train_reshaped)
-#X_test = np.vstack(X_test)
-#y_test_reshaped = np.vstack(y_test_reshaped)
+
+
+# create a new channel of ones
+ones = np.ones((293, 1))
+ones_2 = np.ones((74, 1))
+
+# insert the new channel at the beginning of the last axis
+# reshape the new channel to have shape (293, 1, 1)
+new_channel = np.reshape(ones, (293, 1, 1))
+new_channel_2 = np.reshape(ones_2, (74, 1, 1))
+y_test_new = np.concatenate([new_channel_2, y_test_reshaped], axis=-1)
+
+y_train_new = np.concatenate([new_channel, y_train_reshaped], axis=-1)
+# check the shape of the new array
+print(y_train_new.shape)
+print(y_train_new[0])
+
+
 
 print("x_train",X_train.shape)
 print("y_train_reshaped",y_train_reshaped.shape)
@@ -184,7 +196,7 @@ print("x_test",X_test.shape)
 print("y_test_reshaped",y_test_reshaped.shape)
 
 
-history = model_all.fit([X_train, y_train_reshaped], epochs=100, batch_size=16, validation_data=([X_test, y_test_reshaped]), callbacks=[checkpoint, early_stopping, reduce_lr_on_plateau])
+history = model_all.fit([X_train, y_train_new], epochs=100, batch_size=16, validation_data=([X_test, y_test_new]), callbacks=[checkpoint, early_stopping, reduce_lr_on_plateau])
 
 # Train the model
 #history = model_all.fit([X_train, *y_train], epochs=100, batch_size=16, validation_data=([X_test, *y_test]), callbacks=[checkpoint, early_stopping, reduce_lr_on_plateau])
