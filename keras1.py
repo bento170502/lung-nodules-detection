@@ -97,6 +97,7 @@ def get_model(input_shape_img, input_shape_rois, num_rois, num_classes):
     img_input = Input(shape=input_shape_img)
     roi_input = Input(shape=input_shape_rois)
     roi_input_reshaped = Reshape((-1, 4))(roi_input)
+    
     base_layers = VGG16(include_top=False, input_tensor=img_input)
 
     for layer in base_layers.layers:
@@ -131,17 +132,6 @@ def load_data(annotations_file, img_folder, config):
 
     return X, y
 
-    
-input_shape_img = (None, None, 3)
-input_shape_rois = (None, 4)
-num_rois = 32
-num_classes = 1
-
-model_rpn, model_classifier, model_all = get_model(input_shape_img, input_shape_rois, num_rois, num_classes)
-
-model_rpn.compile(optimizer=Adam(lr=0.001), loss=['binary_crossentropy', 'mse'])
-model_classifier.compile(optimizer=Adam(lr=0.001), loss=['binary_crossentropy', 'mse'])
-model_all.compile(optimizer=Adam(lr=0.001), loss=['binary_crossentropy', 'mse'])
 
 
 # Create the model
@@ -182,11 +172,8 @@ ones_2 = np.ones((74, 1))
 new_channel = np.reshape(ones, (293, 1, 1))
 new_channel_2 = np.reshape(ones_2, (74, 1, 1))
 y_test_new = np.concatenate([new_channel_2, y_test_reshaped], axis=-1)
-
 y_train_new = np.concatenate([new_channel, y_train_reshaped], axis=-1)
-# check the shape of the new array
-print(y_train_new.shape)
-print(y_train_new[0])
+
 
 
 
