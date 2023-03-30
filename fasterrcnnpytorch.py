@@ -49,42 +49,6 @@ class CustomDataset(Dataset):
         target = {"boxes": boxes, "labels": labels}
 
         return image, target
-"""def get_faster_rcnn(num_classes):
-    # Load a pre-trained model for the COCO dataset
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-
-    # Replace the box predictor with a new one for our dataset with a single class
-    in_features = model.roi_heads.box_predictor.cls_score.in_features
-    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-
-    # Replace the backbone to handle single channel input
-    backbone = torchvision.models.resnet50(weights='fasterrcnn_resnet50_fpn_coco')
-    #removes the last two layers of the ResNet50 model using Sequential() and list()
-    # The last two layers are the global average pooling layer and the fully connected layer. 
-    # This is because the Faster R-CNN model expects the backbone network to output feature maps 
-    # instead of class probabilities.
-    backbone = torch.nn.Sequential(*list(backbone.children())[:-2])
-    #This is because the ResNet50 backbone has a final output feature map of size 
-    #7x7 with 2048 channels. The output feature map is used as input to the Region Proposal Network (RPN) 
-    #to generate proposals for object regions.
-    backbone.out_channels = 2048
-
-    # Create the anchorboxes generator with custom sizes
-    anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256, 512),),
-                                       aspect_ratios=((0.5, 1.0, 2.0),))
-
-    # Create the ROI align head
-    roi_pooler = torchvision.ops.MultiScaleRoIAlign(featmap_names=['0'],
-                                                    output_size=7,
-                                                    sampling_ratio=2)
-
-    # Replace the model backbone, rpn_anchor_generator, and box_roi_pool with the new ones
-    model.backbone.body = backbone
-    model.rpn.anchor_generator = anchor_generator
-    model.roi_heads.box_roi_pool = roi_pooler
-
-    return model
-"""
 
 
 def get_faster_rcnn(num_classes):
@@ -134,14 +98,7 @@ def train_model(csv_file,  num_classes, model_save_path):
     data_loader = DataLoader(dataset, batch_size=4, shuffle=True,
                             num_workers=4)
 
-    # Set up the model, optimizer, and learning rate scheduler
-    """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu"):
-    This line of code sets the device to run the model on to either the GPU 
-    (if available) or the CPU (if not). This is because running the model on 
-    a GPU can significantly speed up the computation, especially 
-    when working with large datasets.
-    """
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     num_classes = 2  # Background class (0) + your single class (1)
     model = get_faster_rcnn(num_classes)
@@ -151,11 +108,6 @@ def train_model(csv_file,  num_classes, model_save_path):
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(
         params, lr=0.005, momentum=0.9, weight_decay=0.0005)
-    """
-    This creates a learning rate scheduler that adjusts the learning rate 
-    during training. In this case, it reduces the learning rate by a factor of 
-    0.1 every 3 epochs. 
-    """
     lr_scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, step_size=3, gamma=0.1,verbose=True)
 
